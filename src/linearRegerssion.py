@@ -10,7 +10,7 @@ from pyspark.sql import SparkSession
 from pyspark.ml import Pipeline
 from pyspark.sql.types import ArrayType, StringType, DoubleType, IntegerType
 
-from pyspark.ml.regression import LinearRegression
+from pyspark.ml.regression import LinearRegression, GeneralizedLinearRegression
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.feature import VectorIndexer
 from pyspark.sql.functions import col
@@ -100,6 +100,26 @@ if __name__ == "__main__":
     y_pred = predictions.select("prediction").toPandas()
     r2_score = sklearn.metrics.r2_score(y_true, y_pred)
     print('r2_score: {0}'.format(r2_score))
+
+
+    # https://spark.apache.org/docs/latest/ml-classification-regression.html#generalized-linear-regression
+    # Generalized Gaussian distribution instead of normal distribution
+    # in the context of least-squaures
+    print ("#---------GLR regression -------------------------------------")
+    glr = GeneralizedLinearRegression(family="gaussian", link="identity",\
+        maxIter=10, regParam=0.3)
+    pipeline_g = Pipeline(stages=[featureIndexer, glr])
+    model_g = pipeline_g.fit(trainingData)
+    
+    # model summary
+    # modelsummary(model_g.stages[-1])
+
+    predictions_g = model_g.transform(testData)
+    predictions_g.select("features", "label", "prediction").show(5)
+
+    # Select (prediction, true label) and compute test error
+    rmse = evaluator.evaluate(predictions_g)
+    print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
 
     spark.stop()
 
