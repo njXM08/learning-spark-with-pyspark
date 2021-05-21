@@ -153,7 +153,7 @@ def transData(data):
 if __name__ == "__main__":
     spark = SparkSession\
         .builder\
-        .appName("LinearRegression")\
+        .appName("BinaryClassification")\
         .getOrCreate()
 
     # infer schema in sql-favor: https://www.kaggle.com/janiobachmann/bank-marketing-dataset

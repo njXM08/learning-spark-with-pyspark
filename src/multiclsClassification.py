@@ -11,7 +11,7 @@ from pyspark.sql import SparkSession
 from pyspark.ml import Pipeline
 from pyspark.sql.types import ArrayType, StringType, DoubleType, IntegerType
 
-from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.classification import LogisticRegression, DecisionTreeClassifier, RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.feature import VectorIndexer, IndexToString, StringIndexer, OneHotEncoder, VectorAssembler
 from pyspark.sql.functions import col
@@ -203,11 +203,16 @@ if __name__ == "__main__":
     trainingData.show(5,False)
     testData.show(5,False)
 
+    dTree = DecisionTreeClassifier(labelCol='indexedLabel', featuresCol='indexedFeatures')
+
     logr = LogisticRegression(featuresCol='indexedFeatures', labelCol='indexedLabel')
 
+    rf = RandomForestClassifier(labelCol="indexedLabel", featuresCol="indexedFeatures", numTrees=10)
+    
     labelConverter = IndexToString(inputCol="prediction", outputCol="predictedLabel", \
       labels=labelIndexer.labels)
-    pipeline = Pipeline(stages=[labelIndexer, featureIndexer, logr, labelConverter])
+    #pipeline = Pipeline(stages=[labelIndexer, featureIndexer, logr, labelConverter])
+    pipeline = Pipeline(stages=[labelIndexer, featureIndexer, dTree, labelConverter])
 
     model = pipeline.fit(trainingData)
 
@@ -221,7 +226,9 @@ if __name__ == "__main__":
     print("Test Error = %g" % (1.0 - accuracy))
 
     lrModel = model.stages[2]
-    trainingSummary = lrModel.summary
+
+    # 'DecisionTreeClassificationModel' object has no attribute 'summary'
+    # trainingSummary = lrModel.summary
 
     # @TODO: 'LogisticRegressionTrainingSummary' object has no attribute 'areaUnderROC'
     # trainingSummary.roc.show(5)
@@ -232,8 +239,8 @@ if __name__ == "__main__":
 
     y_true = predictions.select("label")
     y_true = y_true.toPandas()
-    
-    y_pred = predictions.select("predictedLabel")
+                
+    y_pred = predictions.select("predictedLabel")                                                                                                                                                                                                                                                                                                                                                                         
     y_pred = y_pred.toPandas()
     cnf_matrix = confusion_matrix(y_true, y_pred,labels=class_names)
 
