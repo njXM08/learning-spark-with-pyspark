@@ -18,4 +18,6 @@ Testing versions:
 * RFM analysis: onlineRetail2.csv
 ### Elephas for tf.Keras MNIST 
 * Google colab notebook: use Elephas to train tf.keras model in conjunction with pyspark
+### Feature engineering
+* createDataFrame, VectorAssembler, StringIndexer, OneHotEncoder, Scaler
 
