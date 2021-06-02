@@ -21,5 +21,7 @@ Testing versions:
 ### Feature engineering
 * createDataFrame, VectorAssembler, StringIndexer, OneHotEncoder, Scaler
 ### numerical feature exploration
+### dataframe processing: pandas vs. pyspark
+* create dataframe, read csv, columns' renaming, drop-na, fill-na, groupby, join
 
 
