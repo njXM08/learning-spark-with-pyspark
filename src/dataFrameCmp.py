@@ -34,14 +34,13 @@ if __name__ == "__main__":
 
     pd_df = pd.DataFrame(d, columns= col_name)
 
-    # default value makes the list as rows.
     #   A  B  C
-    #0  a  1  2
-	#1  b  2  3
-	#2  c  3  4
+    #0  0  1  1
+	#1  1  0  0
+	#2  0  1  0
     print('pandas df from dict: ', pd_df)
 
-    # (list as values, dict-keyas as col_name)
+    # (list as values, dict-key as col_name)
     df = spark.createDataFrame(np.array(list(d.values())).T.tolist(), list(d.keys())).show()
     
     # 3). read csv/json
@@ -59,7 +58,7 @@ if __name__ == "__main__":
     print(ds.columns)
 
     # dtypes: pd interprets col with "NA" as object, 
-    # ps inteprets col with "NA" as tring
+    # ps inteprets col with "NA" as string
     print('column dtypes: ')
     print(dp.dtypes)
     print(ds.dtypes)
@@ -77,10 +76,10 @@ if __name__ == "__main__":
     
     # 5) replace values in a column
     # pandas' df -> caution: you need to chose specific col
-    dp.A.replace(['male', 'female'],[1, 0], inplace=True)
+    dp.A.replace(['male', 'female'], [1, 0], inplace=True)
 
     # caution: Mixed type replacements are not supported
-    ds1 = ds.na.replace(['male','female'],['1','0'])
+    ds1 = ds.na.replace(['male','female'], ['1','0'])
     #ds1.show()
     #print(ds1.columns)
 
@@ -108,13 +107,12 @@ if __name__ == "__main__":
     print(dp[dp.age<2].head())
     ds[ds.B<=2].show()
 
-    # 6). new column examples: new feature
+    # 6). create new feature (column)
     dp['age_p_bn'] = dp['age']/	sum(dp.age)
     dp['age+10'] = dp.age.apply(lambda x: x+10)
     print(dp)
 
     ds.withColumn('B_p_sC', ds.B/ds.groupBy().agg(F.sum('C')).collect()[0][0]).show()
-
     ds.withColumn('exp_B', F.log(ds.B+200)).show()
     
     # 7). join
@@ -154,16 +152,15 @@ if __name__ == "__main__":
     lefts.join(rights,on='A',how='left').orderBy('A',ascending=True).show()
     
     # 8). concat columns
-    my_list = [('a', 2, 3), ('b', 5, 6), ('c', 8, 9), 
-    ('a', 4, 5)]
+    my_list = [('a', 2, 3), ('b', 5, 6), ('c', 8, 9), ('a', 4, 5)]
     col_name = ['col1', 'col2', 'col3']
 
-    dp = pd.DataFrame(my_list,columns=col_name)
+    dp = pd.DataFrame(my_list, columns=col_name)
     ds = spark.createDataFrame(my_list,schema=col_name)
-    dp['concat'] = dp.apply(lambda x:'%s%s'%(x['col1'],x['col2']),axis=1)
+    dp['concat'] = dp.apply(lambda x:'%s%s'%(x['col1'], x['col2']), axis=1)
     print('concated cols: ', dp)
 
-    ds.withColumn('concat',F.concat('col1','col2')).show()
+    ds.withColumn('concat', F.concat('col1','col2')).show()
     
     # groupBy
     print(dp.groupby(['col1']).agg({'col2':'min','col3':'mean'}))
