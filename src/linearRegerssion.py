@@ -41,6 +41,7 @@ def modelsummary(model):
             Total iterations: %i"% Summary.totalIterations)
 
 # lambda in rdd.map for "map": good for large features
+# up to the last column as "features", the last col as "label"
 def transData(data):
     return data.rdd.map(lambda r: [Vectors.dense(r[:-1]), r[-1]]).toDF(['features', 'label'])
 
